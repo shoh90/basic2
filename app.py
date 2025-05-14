@@ -132,3 +132,6 @@ insight_text = f"""
 - 고흥/완도는 리스크 관점에서 신규 진입 지양, 데이터 기반 지속 모니터링 필요
 """
 st.markdown(insight_text)
+
+st.write("📊 DB 지점명 목록:", df_selected['지점명'].unique())
+st.write("📊 GeoJSON 지점명 목록:", list(coord_dict.keys()))
