@@ -1,0 +1,460 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "도두동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.463,
+          33.4996
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한림읍"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.2614,
+          33.4143
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "애월읍"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.317,
+          33.4649
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "구좌읍"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.7967,
+          33.5196
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "조천읍"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.6264,
+          33.514
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한경면"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.1746,
+          33.3451
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "일도2동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.5402,
+          33.5084
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "이도2동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.5334,
+          33.489
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "용담2동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.5067,
+          33.5143
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "건입동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.5403,
+          33.5148
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "화북동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.5581,
+          33.5291
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "삼양동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.5803,
+          33.5305
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "봉개동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.5825,
+          33.4784
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "아라동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.545,
+          33.4716
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "오라동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.5106,
+          33.4806
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "연동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.4915,
+          33.4889
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "노형동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.4827,
+          33.4882
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "외도동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.4544,
+          33.4931
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "이호동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.4745,
+          33.5012
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": NaN
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          NaN,
+          NaN
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대정읍"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.252,
+          33.2214
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "남원읍"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.6937,
+          33.2745
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "성산읍"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.8803,
+          33.3868
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "안덕면"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.3171,
+          33.2934
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "표선면"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.8305,
+          33.3253
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "송산동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.5097,
+          33.2411
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천지동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.5646,
+          33.2483
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "효돈동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.5695,
+          33.2447
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "영천동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.5604,
+          33.2534
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동홍동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.5721,
+          33.2539
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "서홍동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.5572,
+          33.2492
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대륜동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.5453,
+          33.2442
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대천동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.5358,
+          33.2455
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "중문동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.4116,
+          33.2477
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "예래동"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.4272,
+          33.2413
+        ]
+      }
+    }
+  ]
+}
