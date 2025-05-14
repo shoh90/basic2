@@ -4,12 +4,19 @@ import folium
 from streamlit.components.v1 import html
 from modules.load_data import load_data
 
-st.title("🍊 감귤 재배 적합도 Choropleth 지도")
+st.set_page_config(page_title="감귤 재배 적합도 & 병해충 위험도 지도", layout="wide")
+st.title("🍊 감귤 재배 적합도 & 병해충 위험도 (2025년 기준)")
 
-# 데이터 로딩
+# 🔶 데이터 로딩
 df_weather, df_sunshine = load_data()
+df_weather['연월'] = df_weather['일시'].dt.to_period('M').astype(str)
+df_sunshine['연월'] = df_sunshine['일시'].dt.to_period('M').astype(str)
 
-# 지점 좌표 (딕셔너리 → DataFrame 변환)
+# 🔶 월 선택
+month_options = sorted(df_weather['연월'].unique())
+selected_month = st.selectbox("📅 기준 월 선택", month_options, index=len(month_options)-1)
+
+# 🔶 지점 좌표 (고정)
 stations = {
     '제주시': (33.4996, 126.5312),
     '고산': (33.2931, 126.1628),
@@ -18,46 +25,74 @@ stations = {
     '고흥': (34.6076, 127.2871),
     '완도': (34.3111, 126.7531)
 }
-df_coords = pd.DataFrame.from_dict(stations, orient='index', columns=['위도', '경도']).reset_index().rename(columns={'index': '지점명'})
 
-# 연월 컬럼 생성
-df_weather['연월'] = df_weather['일시'].dt.to_period('M').astype(str)
-df_sunshine['연월'] = df_sunshine['일시'].dt.to_period('M').astype(str)
-
-# 기준 월 선택
-selected_month = st.selectbox("📅 기준 월 선택", sorted(df_weather['연월'].unique()), index=len(df_weather['연월'].unique())-1)
-
-# 데이터 병합
-df_merge = pd.merge(
+# 🔶 데이터 병합 (weather + sunshine)
+df_selected = pd.merge(
     df_weather[df_weather['연월'] == selected_month],
     df_sunshine[df_sunshine['연월'] == selected_month],
     on=['지점명', '연월'],
     how='left'
 )
-df_merge = pd.merge(df_merge, df_coords, on='지점명', how='left')
 
-# 적합도 점수 계산
-df_merge['적합도점수'] = 0
-df_merge['적합도점수'] += df_merge['평균기온(°C)'].apply(lambda x: 33 if 12 <= x <= 18 else 0)
-df_merge['적합도점수'] += df_merge['평균상대습도(%)'].apply(lambda x: 33 if 60 <= x <= 85 else 0)
-df_merge['적합도점수'] += df_merge['합계 일조시간(hr)'].apply(lambda x: 34 if x >= 180 else 0)
+# 🔶 병해충 위험도 계산 함수
+def pest_risk(temp, humid):
+    if temp >= 25 and humid >= 80:
+        return "위험"
+    elif temp >= 20 and humid >= 75:
+        return "주의"
+    else:
+        return "양호"
 
-# 지도 생성
-m = folium.Map(location=[33.4, 126.5], zoom_start=9)
+# 🔶 지도 초기화
+fmap = folium.Map(location=[34.0, 126.5], zoom_start=8)
 
-# Circle Marker 표시
-for _, row in df_merge.iterrows():
-    score = row['적합도점수']
-    color = 'green' if score >= 66 else 'orange' if score >= 33 else 'gray'
-    tooltip = f"{row['지점명']} ({selected_month})<br>적합도: {score}%"
+# 🔶 Circle Marker 추가
+for station, (lat, lon) in stations.items():
+    data = df_selected[df_selected['지점명'] == station]
+    if data.empty: continue
+
+    row = data.iloc[0]
+    temp = row['평균기온(°C)']
+    humid = row['평균상대습도(%)']
+    sunshine = row.get('일조시간', None)
+    radiation = row.get('일사량', None)
+
+    # 감귤 재배 적합도 점수 (기준값)
+    score = 0
+    score += 40 if (12 <= temp <= 18 and 60 <= humid <= 85) else 0
+    score += 30 if sunshine and sunshine >= 150 else 0
+    score += 30 if radiation and radiation >= 400 else 0
+
+    # 병해충 위험도 상태
+    pest_status = pest_risk(temp, humid)
+
+    # 색상 결정
+    if pest_status == "위험":
+        color = 'red'
+    elif pest_status == "주의":
+        color = 'orange'
+    else:
+        color = 'green' if score >= 70 else 'gray'
+
+    # Tooltip 구성
+    tooltip = f"""
+    <b>{station} ({selected_month})</b><br>
+    🌡 평균기온: {temp:.1f}°C<br>
+    💧 평균습도: {humid:.1f}%<br>
+    ☀️ 일조시간: {sunshine if sunshine else '-'} h<br>
+    🔆 일사량: {radiation if radiation else '-'} MJ/m²<br>
+    <b>적합도 점수: {score}%</b><br>
+    🐛 병해충 위험도: <b>{pest_status}</b>
+    """
+
     folium.CircleMarker(
-        location=[row['위도'], row['경도']],
+        location=[lat, lon],
         radius=10,
         color=color,
         fill=True,
         fill_opacity=0.9,
-        popup=tooltip
-    ).add_to(m)
+        popup=folium.Popup(tooltip, max_width=300)
+    ).add_to(fmap)
 
-# 지도 출력
-html(m._repr_html_(), height=600, width=900)
+# 🔶 지도 출력
+html(fmap._repr_html_(), height=600, width=900)
