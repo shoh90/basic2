@@ -9,8 +9,8 @@ from streamlit_folium import st_folium
 st.set_page_config(page_title="제주 감귤 재배 적합도", layout="wide")
 
 # 🔶 db 경로 설정
-db_path = "db/asos_weather.db"
-geojson_path = "db/jeju_geo.json"
+db_path = "data/asos_weather.db"
+geojson_path = "data/jeju_geo.json"
 
 # 🔶 데이터 로딩 (jeju_geo.json)
 with open(geojson_path, encoding='utf-8') as f:
