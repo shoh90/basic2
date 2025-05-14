@@ -30,9 +30,6 @@ except Exception as e:
     st.error(f"❌ DB 파일 오류: {e}")
     st.stop()
 
-# 🔶 컬럼명 확인
-st.write("📊 DB 컬럼명:", df_weather.columns.tolist())
-
 # 🔶 전처리: 연월 추가
 df_weather['일시'] = pd.to_datetime(df_weather['일시'], errors='coerce')
 df_weather['연월'] = df_weather['일시'].dt.to_period('M').astype(str)
@@ -61,19 +58,26 @@ df_selected['적합도점수'] += df_selected[sunshine_col].apply(lambda x: 34 i
 
 df_selected['적합여부'] = df_selected['적합도점수'].apply(lambda x: '적합' if x >= 66 else '부적합')
 
-# 🔶 folium 지도 생성
-m = folium.Map(location=[33.5, 126.5], zoom_start=10)
-
-# ✅ [수정] 안전한 지점명 매칭 함수
-def match_region(name, coord_dict):
+# ✅ 지점명 정제 함수 (읍/면/동/시 제거)
+def normalize_region_name(name):
     if not isinstance(name, str):
-        return None  # NaN, None 방어
+        return None
+    return name.replace('읍', '').replace('면', '').replace('동', '').replace('시', '').strip()
+
+# ✅ 매칭 함수 (정제 포함)
+def match_region(name, coord_dict):
+    name_norm = normalize_region_name(name)
+    if not name_norm:
+        return None
+
     for key in coord_dict.keys():
-        if not isinstance(key, str):
-            continue  # dict key가 이상할 때 방어
-        if key in name or name in key:
+        key_norm = normalize_region_name(key)
+        if key_norm and (key_norm in name_norm or name_norm in key_norm):
             return coord_dict[key]
     return None
+
+# 🔶 folium 지도 생성
+m = folium.Map(location=[33.5, 126.5], zoom_start=10)
 
 # 🔶 마커 표시
 matched_count = 0
