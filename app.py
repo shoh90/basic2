@@ -6,7 +6,7 @@ from modules.load_data import load_data
 
 # 🔶 타이틀
 st.set_page_config(page_title="감귤 생산성 인사이트 리포트", layout="wide")
-st.title("🍊 감귤 생산성 인사이트 리포트 (2025년 4월 기준)")
+st.title("🍊 감귤 생산성 인사이트 리포트 (2025년 기준)")
 
 # 🔶 데이터 로딩
 df_weather, df_sunshine = load_data()
@@ -30,31 +30,36 @@ df_merge['적합도점수'] += df_merge['일조시간'].apply(lambda x: 34 if x 
 
 df_merge['적합여부'] = df_merge['적합도점수'].apply(lambda x: '적합' if x >= 66 else '부적합')
 
-# 🔶 지점명 매핑 테이블 (실제 표기 대응)
+# 🔶 지점명 매핑 테이블
 region_mapping = {
     '서귀포시': '서귀포',
     '고흥군': '고흥',
     '완도군': '완도',
-    '성산읍': '성산',
-    '제주시': '제주시',
-    '고산': '고산',
-    '한림읍': '한림',
-    '애월읍': '애월'
-    # 필요한 지역 추가 가능
+    # 필요시 추가 가능
 }
 
-# 🔶 지점명 매핑 적용
-df_merge['정제지점명'] = df_merge['지점명'].apply(lambda x: region_mapping.get(x, x))
+# 🔶 지점명 정제 및 매핑
+def normalize_region_name(name):
+    if not isinstance(name, str):
+        return None
+    name = name.replace('읍', '').replace('면', '').replace('동', '').replace('시', '').replace('군', '').strip()
+    return region_mapping.get(name, name)
 
-# 🔶 지도 시각화용 좌표
-stations = {
-    '제주시': (33.4996, 126.5312),
-    '고산': (33.2931, 126.1628),
-    '서귀포': (33.2540, 126.5618),
-    '성산': (33.3875, 126.8808),
-    '고흥': (34.6076, 127.2871),
-    '완도': (34.3111, 126.7531)
-}
+df_merge['정제지점명'] = df_merge['지점명'].apply(normalize_region_name)
+
+# 🔶 coords.xlsx 로딩
+coords_df = pd.read_excel('data/coords.xlsx', engine='openpyxl')
+
+# 🔶 stations 딕셔너리 생성
+stations = {}
+for _, row in coords_df.iterrows():
+    name = row['행정구역(읍면동)']
+    lat = row['위도']
+    lon = row['경도']
+    if pd.notnull(name) and pd.notnull(lat) and pd.notnull(lon):
+        stations[name] = (lat, lon)
+
+st.write("📍 로딩된 지점 목록:", list(stations.keys()))
 
 # 🔶 테이블 출력
 st.subheader("📊 감귤 재배 적합성 현황 (적합/부적합)")
@@ -63,13 +68,15 @@ st.dataframe(df_merge[['지점명', '평균기온(°C)', '평균상대습도(%)'
 # 🔶 지도 시각화
 st.subheader("🗺️ 감귤 적합도 지도 (적합/부적합)")
 
-fmap = folium.Map(location=[34.0, 126.5], zoom_start=8)
+fmap = folium.Map(location=[33.5, 126.5], zoom_start=10)
 
+matched_count = 0
 for station, (lat, lon) in stations.items():
     row = df_merge[df_merge['정제지점명'] == station]
     if row.empty:
         continue
 
+    matched_count += 1
     status = row['적합여부'].values[0]
     color = 'green' if status == '적합' else 'gray'
     tooltip = f"<b>{station} ({selected_month})</b><br><b>{status}</b>"
@@ -83,9 +90,14 @@ for station, (lat, lon) in stations.items():
         popup=tooltip
     ).add_to(fmap)
 
+if matched_count == 0:
+    st.warning("❗ 매칭된 지점이 없습니다. 좌표와 지점명을 확인하세요.")
+else:
+    st.success(f"✅ 총 {matched_count}개 지점을 지도에 표시했습니다.")
+
 html(fmap._repr_html_(), height=500, width=800)
 
-# 🔶 최종 인사이트 요약 (자동 생성)
+# 🔶 최종 인사이트 요약
 total = len(df_merge)
 suitable = df_merge['적합여부'].value_counts().get('적합', 0)
 unsuitable = df_merge['적합여부'].value_counts().get('부적합', 0)
