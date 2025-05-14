@@ -28,16 +28,25 @@ df_merge['적합도점수'] += df_merge['평균기온(°C)'].apply(lambda x: 33 
 df_merge['적합도점수'] += df_merge['평균상대습도(%)'].apply(lambda x: 33 if 60 <= x <= 85 else 0)
 df_merge['적합도점수'] += df_merge['일조시간'].apply(lambda x: 34 if x >= 180 else 0)
 
-# "적합/부적합" 구분 컬럼 추가
 df_merge['적합여부'] = df_merge['적합도점수'].apply(lambda x: '적합' if x >= 66 else '부적합')
 
-# 🔶 테이블 출력
-st.subheader("📊 감귤 재배 적합성 현황 (적합/부적합)")
-st.dataframe(df_merge[['지점명', '평균기온(°C)', '평균상대습도(%)', '일조시간', '적합도점수', '적합여부']])
+# 🔶 지점명 매핑 테이블 (실제 표기 대응)
+region_mapping = {
+    '서귀포시': '서귀포',
+    '고흥군': '고흥',
+    '완도군': '완도',
+    '성산읍': '성산',
+    '제주시': '제주시',
+    '고산': '고산',
+    '한림읍': '한림',
+    '애월읍': '애월'
+    # 필요한 지역 추가 가능
+}
 
-# 🔶 지도 시각화
-st.subheader("🗺️ 감귤 적합도 지도 (적합/부적합)")
+# 🔶 지점명 매핑 적용
+df_merge['정제지점명'] = df_merge['지점명'].apply(lambda x: region_mapping.get(x, x))
 
+# 🔶 지도 시각화용 좌표
 stations = {
     '제주시': (33.4996, 126.5312),
     '고산': (33.2931, 126.1628),
@@ -47,11 +56,19 @@ stations = {
     '완도': (34.3111, 126.7531)
 }
 
+# 🔶 테이블 출력
+st.subheader("📊 감귤 재배 적합성 현황 (적합/부적합)")
+st.dataframe(df_merge[['지점명', '평균기온(°C)', '평균상대습도(%)', '일조시간', '적합도점수', '적합여부']])
+
+# 🔶 지도 시각화
+st.subheader("🗺️ 감귤 적합도 지도 (적합/부적합)")
+
 fmap = folium.Map(location=[34.0, 126.5], zoom_start=8)
 
 for station, (lat, lon) in stations.items():
-    row = df_merge[df_merge['지점명'] == station]
-    if row.empty: continue
+    row = df_merge[df_merge['정제지점명'] == station]
+    if row.empty:
+        continue
 
     status = row['적합여부'].values[0]
     color = 'green' if status == '적합' else 'gray'
@@ -68,11 +85,16 @@ for station, (lat, lon) in stations.items():
 
 html(fmap._repr_html_(), height=500, width=800)
 
-# 🔶 최종 인사이트 요약
-st.markdown("""
-### 📍 최종 인사이트 요약
-- **서귀포 & 성산** 지역이 감귤 재배 최적지 (적합)
-- **고흥/완도** 지역은 일조량은 충분하나 습도 부족 및 이상기후로 부적합
+# 🔶 최종 인사이트 요약 (자동 생성)
+total = len(df_merge)
+suitable = df_merge['적합여부'].value_counts().get('적합', 0)
+unsuitable = df_merge['적합여부'].value_counts().get('부적합', 0)
+
+st.markdown(f"""
+### 📍 최종 인사이트 요약 ({selected_month})
+- 전체 {total}개 지점 중 **적합 {suitable}개**, **부적합 {unsuitable}개**
+- **성산, 서귀포 축선이 감귤 재배 최적지로 확인됨**
+- **고흥/완도 지역은 일조량은 충분하나 습도 부족 및 이상기후로 부적합**
 - 감귤 농가 재배지 확장 시 **성산 → 서귀포 축선** 권장
 - 고흥/완도는 신규 진입 지양, 향후 부동산 데이터 연계 시 성산 인근 농지 추천 가능
 """)
