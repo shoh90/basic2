@@ -5,7 +5,7 @@ from streamlit.components.v1 import html
 from modules.load_data import load_data
 
 st.set_page_config(page_title="감귤 재배 적합도 & 병해충 위험도", layout="wide")
-st.title("🍊 감귤 재배 적합도 & 병해충 위험도 (2025년 기준)")
+st.title("🍊 감귤 재배 적합도 & 병해충 위험도")
 
 # 🔶 데이터 로딩
 df_weather, df_sunshine = load_data()
