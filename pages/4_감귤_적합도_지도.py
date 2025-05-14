@@ -4,8 +4,8 @@ import folium
 from streamlit.components.v1 import html
 from modules.load_data import load_data
 
-st.set_page_config(page_title="감귤 재배 적합도 & 병해충 위험도 지도", layout="wide")
-st.title("🍊 감귤 재배 적합도 & 병해충 위험도")
+st.set_page_config(page_title="감귤 재배 적합도 & 병해충 위험도", layout="wide")
+st.title("🍊 감귤 재배 적합도 & 병해충 위험도 (2025년 기준)")
 
 # 🔶 데이터 로딩
 df_weather, df_sunshine = load_data()
@@ -46,7 +46,7 @@ def pest_risk(temp, humid):
 # 🔶 지도 초기화
 fmap = folium.Map(location=[34.0, 126.5], zoom_start=8)
 
-# 🔶 마커 추가
+# 🔶 마커 추가 (온도 기준 색상)
 for station, (lat, lon) in stations.items():
     data = df_selected[df_selected['지점명'] == station]
     if data.empty: continue
@@ -57,20 +57,22 @@ for station, (lat, lon) in stations.items():
     sunshine = row.get('일조시간', None)
     radiation = row.get('일사량', None)
 
-    # 감귤 적합도 (적합 / 부적합)
+    # 감귤 재배 적합도 (적합 / 부적합)
     is_suitable = (12 <= temp <= 18) and (60 <= humid <= 85) and (sunshine is not None and sunshine >= 150) and (radiation is not None and radiation >= 400)
     suitability_status = "적합" if is_suitable else "부적합"
 
     # 병해충 위험도 상태
     pest_status = pest_risk(temp, humid)
 
-    # 색상 결정
-    if pest_status == "위험":
-        color = 'red'
-    elif pest_status == "주의":
+    # 색상 결정 (온도 기준)
+    if 12 <= temp <= 18:
+        color = 'green'
+    elif 18 < temp < 25:
         color = 'orange'
+    elif temp >= 25:
+        color = 'red'
     else:
-        color = 'green' if is_suitable else 'gray'
+        color = 'gray'
 
     # Tooltip 구성
     tooltip = f"""
