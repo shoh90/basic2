@@ -30,6 +30,9 @@ except Exception as e:
     st.error(f"❌ DB 파일 오류: {e}")
     st.stop()
 
+# 🔶 컬럼명 확인
+st.write("📊 DB 컬럼명:", df_weather.columns.tolist())
+
 # 🔶 전처리: 연월 추가
 df_weather['일시'] = pd.to_datetime(df_weather['일시'], errors='coerce')
 df_weather['연월'] = df_weather['일시'].dt.to_period('M').astype(str)
@@ -49,6 +52,37 @@ if not humidity_col or not sunshine_col:
     st.error(f"❌ '습도' 또는 '일조' 컬럼 없음. 현재: {df_selected.columns.tolist()}")
     st.stop()
 
+# 🔶 지점명 매핑 테이블 (DB → GeoJSON 기준으로 맞추기)
+region_mapping = {
+    '서귀포시': '서귀포',  # 예시
+    '성산읍': '성산읍',
+    '한림읍': '한림읍',
+    '애월읍': '애월읍',
+    '대정읍': '대정읍',
+    '남원읍': '남원읍',
+    '구좌읍': '구좌읍',
+    '조천읍': '조천읍',
+    '안덕면': '안덕면',
+    '표선면': '표선면',
+    '일도2동': '일도2동',
+    '이도2동': '이도2동',
+    '용담2동': '용담2동',
+    # 필요시 추가
+}
+
+# 🔶 지점명 정제 및 매핑
+def normalize_region_name(name):
+    if not isinstance(name, str):
+        return None
+    name = name.replace('읍', '').replace('면', '').replace('동', '').replace('시', '').replace('군', '').strip()
+    return region_mapping.get(name, name)
+
+df_selected['정제지점명'] = df_selected['지점명'].apply(normalize_region_name)
+
+# 🔶 GeoJSON 기준으로 필터링
+geojson_names = [k for k in coord_dict.keys() if isinstance(k, str)]
+df_selected = df_selected[df_selected['정제지점명'].isin(geojson_names)]
+
 # 🔶 적합도 계산
 df_selected['적합도점수'] = 0
 df_selected['적합도점수'] += df_selected['평균기온(°C)'].apply(lambda x: 33 if 12 <= x <= 18 else 0)
@@ -58,52 +92,35 @@ df_selected['적합도점수'] += df_selected[sunshine_col].apply(lambda x: 34 i
 
 df_selected['적합여부'] = df_selected['적합도점수'].apply(lambda x: '적합' if x >= 66 else '부적합')
 
-# ✅ 정제 함수 (읍/면/동/시/군 제거)
-def normalize_region_name(name):
-    if not isinstance(name, str):
-        return None
-    return name.replace('읍', '').replace('면', '').replace('동', '').replace('시', '').replace('군', '').strip()
-
-# ✅ GeoJSON 기준 지점명 목록 정리
-geojson_names = [normalize_region_name(k) for k in coord_dict.keys() if isinstance(k, str)]
-
-# ✅ DB 지점명 정제 후 매칭되는 것만 필터링
-df_selected['정제지점명'] = df_selected['지점명'].apply(normalize_region_name)
-df_selected = df_selected[df_selected['정제지점명'].isin(geojson_names)]
-
 # 🔶 folium 지도 생성
 m = folium.Map(location=[33.5, 126.5], zoom_start=10)
 
-# 🔶 마커 표시 (GeoJSON 매칭만)
+# 🔶 마커 표시
 matched_count = 0
 for _, row in df_selected.iterrows():
-    region = row['지점명']
-    normalized_name = normalize_region_name(region)
+    region = row['정제지점명']
+    coords = coord_dict.get(region)
+    if coords:
+        matched_count += 1
+        lat, lon = coords[1], coords[0]
+        status = row['적합여부']
+        color = 'green' if status == '적합' else 'gray'
 
-    # 매칭 좌표 찾기
-    for key, coords in coord_dict.items():
-        if normalize_region_name(key) == normalized_name:
-            matched_count += 1
-            lat, lon = coords[1], coords[0]
-            status = row['적합여부']
-            color = 'green' if status == '적합' else 'gray'
+        tooltip_text = (
+            f"{row['지점명']} ({status})\n"
+            f"기온: {row['평균기온(°C)']}°C\n"
+            f"습도: {row[humidity_col]}%\n"
+            f"일조: {row[sunshine_col]}시간"
+        )
 
-            tooltip_text = (
-                f"{region} ({status})\n"
-                f"기온: {row['평균기온(°C)']}°C\n"
-                f"습도: {row[humidity_col]}%\n"
-                f"일조: {row[sunshine_col]}시간"
-            )
-
-            folium.CircleMarker(
-                location=[lat, lon],
-                radius=10,
-                color=color,
-                fill=True,
-                fill_opacity=0.7,
-                tooltip=tooltip_text
-            ).add_to(m)
-            break  # 한 번 매칭되면 종료
+        folium.CircleMarker(
+            location=[lat, lon],
+            radius=10,
+            color=color,
+            fill=True,
+            fill_opacity=0.7,
+            tooltip=tooltip_text
+        ).add_to(m)
 
 # 🔶 지도 출력
 st.subheader(f"🗺️ 감귤 재배 적합도 지도 ({selected_month})")
