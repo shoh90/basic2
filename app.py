@@ -64,9 +64,13 @@ df_selected['적합여부'] = df_selected['적합도점수'].apply(lambda x: '�
 # 🔶 folium 지도 생성
 m = folium.Map(location=[33.5, 126.5], zoom_start=10)
 
-# 🔶 지점명 매칭 함수 (부분 포함 허용)
+# ✅ [수정] 안전한 지점명 매칭 함수
 def match_region(name, coord_dict):
+    if not isinstance(name, str):
+        return None  # NaN, None 방어
     for key in coord_dict.keys():
+        if not isinstance(key, str):
+            continue  # dict key가 이상할 때 방어
         if key in name or name in key:
             return coord_dict[key]
     return None
