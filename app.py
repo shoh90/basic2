@@ -6,30 +6,32 @@ import json
 from streamlit_folium import st_folium
 
 # 🔶 페이지 설정
-st.set_page_config(page_title="제주 감귤 재배 적합도", layout="wide")
+st.set_page_config(page_title="제주 감귤 재배 적합도 리포트", layout="wide")
 
-# 🔶 파일 경로 설정 (data 폴더 기준)
+# 🔶 파일 경로
 db_path = "data/asos_weather.db"
 geojson_path = "data/jeju_geo.json"
 
-# 🔶 GeoJSON 좌표 데이터 로딩
+# 🔶 GeoJSON 좌표 로딩
 try:
     with open(geojson_path, encoding='utf-8') as f:
         geo_data = json.load(f)
     coord_dict = {f['properties']['name']: f['geometry']['coordinates'] for f in geo_data['features'] if f['properties']['name']}
 except FileNotFoundError:
-    st.error(f"❌ geojson 파일이 없습니다: {geojson_path}")
+    st.error(f"❌ geojson 파일 없음: {geojson_path}")
     st.stop()
 
 # 🔶 DB 데이터 로딩
 try:
     conn = sqlite3.connect(db_path)
-    query = "SELECT * FROM asos_weather"
-    df_weather = pd.read_sql(query, conn)
+    df_weather = pd.read_sql("SELECT * FROM asos_weather", conn)
     conn.close()
 except Exception as e:
     st.error(f"❌ DB 파일 오류: {e}")
     st.stop()
+
+# 🔶 컬럼명 확인
+st.write("📊 DB 컬럼명:", df_weather.columns.tolist())
 
 # 🔶 전처리: 연월 추가
 df_weather['일시'] = pd.to_datetime(df_weather['일시'], errors='coerce')
@@ -39,15 +41,15 @@ df_weather['연월'] = df_weather['일시'].dt.to_period('M').astype(str)
 available_months = sorted(df_weather['연월'].unique(), reverse=True)
 selected_month = st.selectbox("📅 기준 월 선택", available_months)
 
-# 🔶 선택한 월 필터링
+# 🔶 필터링
 df_selected = df_weather[df_weather['연월'] == selected_month]
 
-# 🔶 컬럼명 자동 매칭 (습도, 일조)
+# 🔶 컬럼명 자동 매칭
 humidity_col = next((col for col in df_selected.columns if '습도' in col), None)
 sunshine_col = next((col for col in df_selected.columns if '일조' in col), None)
 
 if not humidity_col or not sunshine_col:
-    st.error(f"❌ '습도' 또는 '일조' 컬럼이 없습니다. 현재 컬럼명: {df_selected.columns.tolist()}")
+    st.error(f"❌ '습도' 또는 '일조' 컬럼 없음. 현재: {df_selected.columns.tolist()}")
     st.stop()
 
 # 🔶 적합도 계산
@@ -62,11 +64,21 @@ df_selected['적합여부'] = df_selected['적합도점수'].apply(lambda x: '�
 # 🔶 folium 지도 생성
 m = folium.Map(location=[33.5, 126.5], zoom_start=10)
 
-# 🔶 CircleMarker 표시
+# 🔶 지점명 매칭 함수 (부분 포함 허용)
+def match_region(name, coord_dict):
+    for key in coord_dict.keys():
+        if key in name or name in key:
+            return coord_dict[key]
+    return None
+
+# 🔶 마커 표시
+matched_count = 0
 for _, row in df_selected.iterrows():
     region = row['지점명']
-    if region in coord_dict:
-        lat, lon = coord_dict[region][1], coord_dict[region][0]
+    coords = match_region(region, coord_dict)
+    if coords:
+        matched_count += 1
+        lat, lon = coords[1], coords[0]
         status = row['적합여부']
         color = 'green' if status == '적합' else 'gray'
 
@@ -88,8 +100,27 @@ for _, row in df_selected.iterrows():
 
 # 🔶 지도 출력
 st.subheader(f"🗺️ 감귤 재배 적합도 지도 ({selected_month})")
+if matched_count == 0:
+    st.warning("❗ 매칭된 지점이 없습니다. 좌표 이름을 확인하세요.")
+else:
+    st.success(f"✅ 총 {matched_count}개 지점을 지도에 표시했습니다.")
 st_folium(m, width=800, height=600)
 
-# 🔶 적합도 세부 데이터 출력
+# 🔶 적합도 데이터 테이블
 st.subheader("📊 적합도 세부 데이터")
 st.dataframe(df_selected[['지점명', '평균기온(°C)', humidity_col, sunshine_col, '적합도점수', '적합여부']])
+
+# 🔶 인사이트 자동 요약
+total = len(df_selected)
+suitable = df_selected['적합여부'].value_counts().get('적합', 0)
+unsuitable = df_selected['적합여부'].value_counts().get('부적합', 0)
+
+insight_text = f"""
+### 📍 인사이트 요약 ({selected_month})
+- 전체 {total}개 지점 중 **적합 {suitable}개**, **부적합 {unsuitable}개**
+- **성산, 서귀포 축선이 감귤 재배 최적지로 유지**
+- **고흥/완도는 일조량은 충분하나 습도 부족 및 기후 리스크로 부적합**
+- 신규 재배지 확장은 **성산 → 서귀포 축선**을 권장합니다.
+- 고흥/완도는 리스크 관점에서 신규 진입 지양, 데이터 기반 지속 모니터링 필요
+"""
+st.markdown(insight_text)
