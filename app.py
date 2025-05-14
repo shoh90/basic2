@@ -4,7 +4,7 @@ import folium
 from streamlit.components.v1 import html
 from modules.load_data import load_data
 
-# 🔶 타이틀
+# 🔶 페이지 설정
 st.set_page_config(page_title="감귤 생산성 인사이트 리포트", layout="wide")
 st.title("🍊 감귤 생산성 인사이트 리포트 (2025년 기준)")
 
@@ -35,7 +35,7 @@ region_mapping = {
     '서귀포시': '서귀포',
     '고흥군': '고흥',
     '완도군': '완도',
-    # 필요시 추가 가능
+    # 필요 시 추가
 }
 
 # 🔶 지점명 정제 및 매핑
@@ -47,19 +47,13 @@ def normalize_region_name(name):
 
 df_merge['정제지점명'] = df_merge['지점명'].apply(normalize_region_name)
 
-# 🔶 coords.xlsx 로딩
+# 🔶 coords.xlsx 로딩 → stations 딕셔너리 생성
 coords_df = pd.read_excel('data/coords.xlsx', engine='openpyxl')
-
-# 🔶 stations 딕셔너리 생성
-stations = {}
-for _, row in coords_df.iterrows():
-    name = row['행정구역(읍면동)']
-    lat = row['위도']
-    lon = row['경도']
-    if pd.notnull(name) and pd.notnull(lat) and pd.notnull(lon):
-        stations[name] = (lat, lon)
-
-st.write("📍 로딩된 지점 목록:", list(stations.keys()))
+stations = {
+    row['행정구역(읍면동)']: (row['위도'], row['경도'])
+    for _, row in coords_df.iterrows()
+    if pd.notnull(row['행정구역(읍면동)']) and pd.notnull(row['위도']) and pd.notnull(row['경도'])
+}
 
 # 🔶 테이블 출력
 st.subheader("📊 감귤 재배 적합성 현황 (적합/부적합)")
