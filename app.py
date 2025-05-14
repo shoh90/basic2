@@ -31,9 +31,6 @@ except Exception as e:
     st.error(f"❌ DB 파일 오류: {e}")
     st.stop()
 
-# 🔶 컬럼명 확인
-st.write("📊 DB 컬럼명 확인:", df_weather.columns.tolist())
-
 # 🔶 전처리: 연월 추가
 df_weather['일시'] = pd.to_datetime(df_weather['일시'], errors='coerce')
 df_weather['연월'] = df_weather['일시'].dt.to_period('M').astype(str)
