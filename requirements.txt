@@ -1,7 +1,8 @@
 streamlit
 pandas
+numpy
 plotly
 folium
-geopandas
 streamlit-folium
+sqlite3
 openpyxl
