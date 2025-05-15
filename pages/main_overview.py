@@ -48,9 +48,9 @@ st.plotly_chart(fig)
 st.subheader("📍 제주도 귤 재배량 지도")
 
 # 데이터 불러오기
-data_1 = pd.read_excel('5.xlsx', engine='openpyxl')
-data_2 = pd.read_excel('4.xlsx', engine='openpyxl')
-coords = pd.read_excel('coords.xlsx', engine='openpyxl')
+data_1 = pd.read_excel('data/5.xlsx', engine='openpyxl')
+data_2 = pd.read_excel('data/4.xlsx', engine='openpyxl')
+coords = pd.read_excel('data/coords.xlsx', engine='openpyxl')
 coords_dict = coords.set_index("행정구역(읍면동)").T.to_dict()
 
 # 연도 선택
