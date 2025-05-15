@@ -3,6 +3,8 @@ import pandas as pd
 import sqlite3
 import folium
 from streamlit_folium import st_folium
+import glob
+import os
 
 # 페이지 설정
 st.set_page_config(page_title="제주 농부 스마트 대시보드", layout="wide", page_icon="🍊")
@@ -25,7 +27,7 @@ df_weather['월'] = df_weather['일시'].dt.month
 df_citrus = pd.read_excel('data/5.xlsx')
 df_coords = pd.read_excel('data/coords.xlsx')
 
-# 컬럼명 리네임
+# 컬럼명 정리
 df_weather = df_weather.rename(columns={'지점명': '읍면동'})
 df_coords = df_coords.rename(columns={'행정구역(읍면동)': '읍면동'})
 df_citrus = df_citrus.rename(columns={'행정구역(읍면동)': '읍면동'})
@@ -77,7 +79,14 @@ for _, row in df.iterrows():
 
 st_folium(m, width=1000, height=600)
 
-# 병해충 방제약 정보
+# 병해충 방제약 정보 통합
 st.subheader("🐛 주요 병해충 방제약 정보")
-df_pest = pd.read_csv('data/pest_disease_4.csv')
-st.dataframe(df_pest[['중점방제대상', '병해충', '방제약', '데이터기준일자']])
+
+pest_files = glob.glob('data/pest_disease_info_*.csv')
+
+if pest_files:
+    df_pest_list = [pd.read_csv(file) for file in pest_files]
+    df_pest = pd.concat(df_pest_list, ignore_index=True)
+    st.dataframe(df_pest[['중점방제대상', '병해충', '방제약', '데이터기준일자']])
+else:
+    st.warning("⚠️ 병해충 파일(pest_disease_info_*.csv)을 찾을 수 없습니다.")
