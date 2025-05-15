@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from modules.db_loader import load_db_table
+from modules.pages_common import render_chart
 
 st.header("🌧 강수량 분석")
 
