@@ -48,10 +48,13 @@ df_weather['월'] = df_weather['일시'].dt.month
 
 # 재배량 데이터
 df_citrus = pd.read_excel('data/5.xlsx')
+st.write("🍊 df_citrus 컬럼명:", df_citrus.columns.tolist())
 df_citrus = df_citrus.rename(columns={'행정구역(읍면동)': '읍면동'})
 
 # 좌표 데이터
 df_coords = pd.read_excel('data/coords.xlsx')
+st.write("🗺️ df_coords 컬럼명:", df_coords.columns.tolist())
+df_coords = df_coords.rename(columns={'행정구역(읍면동)': '읍면동'})
 
 # ✅ 5. 재배량 총합 컬럼 생성
 df_citrus['총재배량(톤)'] = df_citrus[[
