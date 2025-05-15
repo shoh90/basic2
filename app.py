@@ -4,10 +4,10 @@ import sqlite3
 import folium
 from streamlit_folium import st_folium
 
-# ✅ 페이지 설정
+# ✅ 1. 페이지 설정
 st.set_page_config(page_title="제주 농부 스마트 대시보드", layout="wide", page_icon="🍊")
 
-# ✅ 상단 대시보드 안내
+# ✅ 2. 상단 대시보드 안내
 st.title("🍊 제주 농부 스마트 대시보드")
 
 st.markdown("""
@@ -30,6 +30,7 @@ st.divider()
 month = st.selectbox("확인할 월을 선택하세요", list(range(1, 13)))
 
 # ✅ 데이터 로딩
+# 1. 기상 데이터
 conn = sqlite3.connect('data/asos_weather.db')
 df_weather = pd.read_sql("SELECT * FROM asos_weather", conn)
 conn.close()
@@ -37,18 +38,23 @@ conn.close()
 df_weather['일시'] = pd.to_datetime(df_weather['일시'])
 df_weather['월'] = df_weather['일시'].dt.month
 
+# 2. 재배량 데이터
 df_citrus = pd.read_excel('data/5.xlsx')
 df_citrus = df_citrus.rename(columns={'행정구역(읍면동)': '읍면동'})
 
+# 3. 좌표 데이터
 df_coords = pd.read_excel('data/coords.xlsx')
 st.write("🗺️ df_coords 실제 컬럼명:", df_coords.columns.tolist())
 
-# ✅ 안전한 컬럼명 매칭 처리
-if '행정구역(읍면동)' in df_coords.columns:
-    df_coords = df_coords.rename(columns={'행정구역(읍면동)': '읍면동'})
-elif '읍면동' not in df_coords.columns:
-    st.error("❗ df_coords에 '읍면동' 컬럼이 없습니다. 현재 컬럼명을 확인해주세요.")
+# ✅ 좌표 데이터 Key 안전판
+possible_keys = ['읍면동', '행정구역(읍면동)', '지점명']
+key_col = next((col for col in possible_keys if col in df_coords.columns), None)
+
+if not key_col:
+    st.error("❗ df_coords에서 '읍면동'으로 사용할 수 있는 컬럼명이 없습니다. 컬럼명을 확인해주세요.")
     st.stop()
+
+df_coords = df_coords.rename(columns={key_col: '읍면동'})
 
 # ✅ 총재배량(톤) 생성
 df_citrus['총재배량(톤)'] = df_citrus[[
