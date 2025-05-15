@@ -226,7 +226,7 @@ else: # 아무것도 선택 안하면 아무것도 안나오도록 (또는 전�
 
 
 # --- 지도 시각화 ---
-st.subheader(f"🗺️ {selected_year if selected_year else 'N/A'}년 {selected_month}월 재배 적합도")
+st.subheader(f"🗺️ {selected_year}년 {selected_month}월 읍면동별 감귤 재배 적합도")
 # ... (이전 지도 시각화 코드와 동일, 단 df_filtered_map 사용) ...
 if not df_filtered_map.empty:
     map_center = [33.361667, 126.528333]
