@@ -4,10 +4,10 @@ import sqlite3
 import folium
 from streamlit_folium import st_folium
 
-# ✅ 페이지 설정 (무조건 첫 줄)
+# ✅ 페이지 설정 (맨 위 1번만)
 st.set_page_config(page_title="제주 농부 스마트 대시보드", layout="wide", page_icon="🍊")
 
-# ----------------- 상단 대시보드 소개 -----------------
+# ✅ 상단 대시보드 소개
 st.title("🍊 제주 농부 스마트 대시보드")
 
 st.markdown("""
@@ -32,7 +32,7 @@ with col3:
 st.divider()
 st.caption("© 2024 제주 스마트팜 농가 대시보드 | Data: KMA, 제주특별자치도")
 
-# ----------------- 감귤 재배 적합도 지도 -----------------
+# ✅ 제주 감귤 재배 적합도 지도
 st.subheader("🍊 제주 감귤 재배 적합도 종합 지도")
 
 month = st.selectbox("확인할 월을 선택하세요", list(range(1, 13)))
@@ -46,39 +46,41 @@ conn.close()
 df_weather['일시'] = pd.to_datetime(df_weather['일시'])
 df_weather['월'] = df_weather['일시'].dt.month
 
-df_sun = pd.read_csv('data/sunshine_data.csv')
+df_citrus = pd.read_excel('data/5.xlsx')
+df_coords = pd.read_excel('data/coords.xlsx')
 df_pest = pd.concat([
     pd.read_csv('data/pest_disease_info_1.csv'),
     pd.read_csv('data/pest_disease_info_2.csv'),
     pd.read_csv('data/pest_disease_info_3.csv')
 ])
 
-df_citrus = pd.read_excel('data/5.xlsx')
-df_coords = pd.read_excel('data/coords.xlsx')
-
-# ✅ 컬럼명 확인 및 자동 매칭
-st.write("현재 asos_weather 컬럼명:", df_weather.columns.tolist())
-
-col_map = {}
-for target in ['평균기온', '평균 상대습도', '일강수량', '평균 풍속']:
-    matches = [col for col in df_weather.columns if target in col]
-    if matches:
-        col_map[target] = matches[0]
-    else:
-        st.error(f"❗ '{target}' 와 유사한 컬럼을 찾을 수 없습니다.")
-        st.stop()
+# ✅ 컬럼명 매핑 (실제 데이터 기준)
+col_map = {
+    '평균기온': '평균기온(°C)',
+    '평균 상대습도': '평균상대습도(%)',
+    '일강수량': '월합강수량(00~24h만)(mm)',
+    '평균 풍속': '평균풍속(m/s)',
+    '일조시간': '합계 일조시간(hr)'
+}
 
 # ✅ 월별 기후 데이터 집계
 weather_monthly = df_weather[df_weather['월'] == month].groupby('지점명').agg({
     col_map['평균기온']: 'mean',
     col_map['평균 상대습도']: 'mean',
     col_map['일강수량']: 'sum',
-    col_map['평균 풍속']: 'mean'
+    col_map['평균 풍속']: 'mean',
+    col_map['일조시간']: 'sum'
 }).reset_index().rename(columns={'지점명': '읍면동'})
 
-# ✅ 일조량 & 병해충 데이터 집계
-sun_monthly = df_sun[df_sun['월'] == month][['읍면동', '일조시간(hr)']]
+weather_monthly = weather_monthly.rename(columns={
+    col_map['평균기온']: '평균기온(°C)',
+    col_map['평균 상대습도']: '평균상대습도(%)',
+    col_map['일강수량']: '월합강수량(mm)',
+    col_map['평균 풍속']: '평균풍속(m/s)',
+    col_map['일조시간']: '일조시간(hr)'
+})
 
+# ✅ 병해충 데이터 처리
 df_pest['데이터기준일자'] = pd.to_datetime(df_pest['데이터기준일자'])
 df_pest['월'] = df_pest['데이터기준일자'].dt.month
 pest_monthly = df_pest[df_pest['월'] == month].groupby('중점방제대상').agg({
@@ -86,16 +88,15 @@ pest_monthly = df_pest[df_pest['월'] == month].groupby('중점방제대상').ag
 }).reset_index().rename(columns={'중점방제대상': '읍면동'})
 
 # ✅ 데이터 병합
-df = weather_monthly.merge(sun_monthly, on='읍면동', how='left')
-df = df.merge(df_citrus[['읍면동', '재배량(톤)']], on='읍면동', how='left')
+df = weather_monthly.merge(df_citrus[['읍면동', '재배량(톤)']], on='읍면동', how='left')
 df = df.merge(df_coords, on='읍면동', how='left')
 df = df.merge(pest_monthly, on='읍면동', how='left')
 
 # ✅ 적합도 계산
-df['기온적합'] = df[col_map['평균기온']].apply(lambda x: 1 if 18 <= x <= 25 else 0)
-df['습도적합'] = df[col_map['평균 상대습도']].apply(lambda x: 1 if 60 <= x <= 75 else 0)
-df['강수적합'] = df[col_map['일강수량']].apply(lambda x: 1 if x <= 50 else 0)
-df['풍속적합'] = df[col_map['평균 풍속']].apply(lambda x: 1 if x <= 5 else 0)
+df['기온적합'] = df['평균기온(°C)'].apply(lambda x: 1 if 18 <= x <= 25 else 0)
+df['습도적합'] = df['평균상대습도(%)'].apply(lambda x: 1 if 60 <= x <= 75 else 0)
+df['강수적합'] = df['월합강수량(mm)'].apply(lambda x: 1 if x <= 50 else 0)
+df['풍속적합'] = df['평균풍속(m/s)'].apply(lambda x: 1 if x <= 5 else 0)
 df['일조적합'] = df['일조시간(hr)'].apply(lambda x: 1 if x >= 6 else 0)
 df['병해적합'] = df['위험도지수'].apply(lambda x: 1 if pd.notnull(x) and x <= 0.5 else 0)
 
