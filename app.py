@@ -78,7 +78,7 @@ df['결과'] = df['적합도점수'].apply(lambda x: '적합' if x >= 4 else ('�
 df = df[df['결과'].isin(filter_options)]
 
 # 지도 시각화
-st.subheader(f"🗺️ {selected_year}년 {selected_month}월 재배 적합도 (필터: {', '.join(filter_options)})")
+st.subheader("🗺️ {selected_year}년 {selected_month}월 재배 적합도 (필터: {', '.join(filter_options)})")
 m = folium.Map(location=[33.4, 126.5], zoom_start=10)
 for _, row in df.iterrows():
     if pd.notnull(row['위도']) and pd.notnull(row['경도']):
