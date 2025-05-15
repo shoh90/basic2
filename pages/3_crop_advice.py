@@ -10,21 +10,21 @@ citrus_advice = {
     3: {
         "info": "꽃눈이 분화되고 초기 수분관리가 중요한 시기입니다.",
         "warning": "봄 가뭄 대비 물주기 & 진딧물 예찰 필요",
-        "image": "https://upload.wikimedia.org/wikipedia/commons/8/82/Mandarin_oranges_on_tree.jpg",
+        "image": "https://cdn.pixabay.com/photo/2017/01/20/15/06/oranges-1995056_1280.jpg",
         "todo": ["수분 관리 강화", "진딧물 예찰", "토양 배수 점검"],
-        "progress": 20  # 착색률 예시
+        "progress": 20
     },
     5: {
         "info": "꽃이 지고 열매가 맺히는 시기입니다. 물 관리와 병해충 주의가 필요합니다.",
         "warning": "진딧물, 깍지벌레 방제 집중",
-        "image": "https://upload.wikimedia.org/wikipedia/commons/f/fc/Citrus_sinensis_fruit_01.jpg",
+        "image": "https://cdn.pixabay.com/photo/2015/12/01/20/28/mandarin-1078065_1280.jpg",
         "todo": ["과일 비대기 물주기", "병해충 방제", "비료 살포"],
         "progress": 40
     },
     10: {
         "info": "수확기를 앞두고 과일 비대와 착색이 진행됩니다.",
         "warning": "탄저병 발생 주의 → 방제 필수",
-        "image": "https://upload.wikimedia.org/wikipedia/commons/d/d3/Citrus_unshiu.jpg",
+        "image": "https://cdn.pixabay.com/photo/2017/01/20/15/06/oranges-1995056_1280.jpg",
         "todo": ["착색 촉진 관리", "탄저병 방제", "조기 수확 준비"],
         "progress": 90
     }
@@ -42,7 +42,7 @@ if advice:
     # ✅ 왼쪽: 정보 + 주의사항
     with col1:
         st.success(f"✅ {month}월 감귤 관리 포인트")
-        st.markdown(f"**📌 작업 조언**\n- {advice['info']}")
+        st.markdown(f"### 📌 작업 조언\n- {advice['info']}")
         st.warning(f"⚠️ {advice['warning']}")
 
         st.subheader("📝 이번 달 할 일 체크리스트")
@@ -52,9 +52,9 @@ if advice:
         st.subheader("🎨 착색 진행률")
         st.progress(advice['progress'] / 100)
 
-    # ✅ 오른쪽: 이미지 표시
+    # ✅ 오른쪽: 이미지
     with col2:
-        st.image(advice['image'], caption=f"{month}월 감귤 생육 예시", use_column_width=True)
+        st.image(advice['image'], caption=f"{month}월 감귤 생육 예시", use_container_width=True)
 
 else:
     st.info(f"현재 {month}월 감귤 조언 데이터가 없습니다.")
