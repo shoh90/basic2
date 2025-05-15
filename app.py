@@ -29,7 +29,7 @@ with col2:
 with col3:
     st.subheader("🥕 작물 맞춤 조언")
     st.markdown("감귤, 배추 등 월별 재배 관리법 제공")
-    st.page_link("pages/3_crop_advice.py", label="작물 조언 ➡️")
+    st.page_link("3_crop_advice", label="작물 조언 ➡️")
 
 st.divider()
 st.caption("© 2024 제주 스마트팜 농가 대시보드 | Data: KMA, 제주도청, 농업기술원")
