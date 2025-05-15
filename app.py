@@ -104,4 +104,19 @@ for idx, row in df.iterrows():
             color=color,
             fill=True,
             fill_opacity=0.6,
-            popup=f"{row['읍면동']}\n재
+            popup=f"{row['읍면동']}\n재배량: {row['재배량(톤)']}톤\n적합도: {row['적합도']:.2f}",
+            tooltip=row['결과']
+        ).add_to(m)
+
+st_folium(m, width=1000, height=600)
+
+# ✅ 11. 병해충 방제약 정보 (표로 표시)
+st.subheader("🐛 주요 병해충 방제약 정보")
+
+df_pest = pd.concat([
+    pd.read_csv('data/pest_disease_info_1.csv'),
+    pd.read_csv('data/pest_disease_info_2.csv'),
+    pd.read_csv('data/pest_disease_info_3.csv')
+])
+
+st.dataframe(df_pest[['중점방제대상', '병해충', '방제약', '데이터기준일자']])
