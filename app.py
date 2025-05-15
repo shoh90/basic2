@@ -23,8 +23,8 @@ with col1:
 with col2:
     st.subheader("📊 기후 & 병해충 분석")
     st.markdown("- 기온, 강수량, 풍속, 습도, 일조량\n- 병해충 발생 현황 및 경고")
-    st.page_link("pages/2_temperature.py", label="기온 분석 ➡️")
-    st.page_link("pages/2_pest_disease.py", label="병해충 분석 ➡️")
+    st.page_link("2_temperature", label="기온 분석 ➡️")
+    st.page_link("2_pest_disease", label="병해충 분석 ➡️")
 
 with col3:
     st.subheader("🥕 작물 맞춤 조언")
