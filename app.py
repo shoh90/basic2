@@ -7,7 +7,7 @@ from streamlit_folium import st_folium
 # ✅ 1. 페이지 설정
 st.set_page_config(page_title="제주 농부 스마트 대시보드", layout="wide", page_icon="🍊")
 
-# ✅ 2. 상단 대시보드 안내
+# ✅ 2. 대시보드 소개
 st.title("🍊 제주 농부 스마트 대시보드")
 
 st.markdown("""
@@ -38,7 +38,6 @@ st.subheader("🍊 제주 감귤 재배 적합도 종합 지도")
 month = st.selectbox("확인할 월을 선택하세요", list(range(1, 13)))
 
 # ✅ 4. 데이터 로딩
-# 기상데이터
 conn = sqlite3.connect('data/asos_weather.db')
 df_weather = pd.read_sql("SELECT * FROM asos_weather", conn)
 conn.close()
