@@ -13,7 +13,7 @@ df_pest = pd.concat([df1, df2, df3], ignore_index=True)
 df_pest = preprocess_pest_disease(df_pest)
 
 # ✅ 컬럼명 확인
-st.write("✅ 현재 병해충 데이터 컬럼명:", df_pest.columns)
+# st.write("✅ 현재 병해충 데이터 컬럼명:", df_pest.columns)
 
 # '월' 컬럼이 없으면 '발표일' 또는 '데이터기준일자'에서 생성
 if '월' not in df_pest.columns:
