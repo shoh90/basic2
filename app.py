@@ -4,8 +4,7 @@ import sqlite3
 import folium
 from streamlit_folium import st_folium
 
-st.set_page_config(page_title="제주 감귤 재배 적합도", layout="wide")
-
+# ✅ 최상단에 1번만 사용
 st.set_page_config(
     page_title="제주 농부 스마트 대시보드",
     layout="wide",
@@ -37,15 +36,12 @@ with col3:
 st.divider()
 st.caption("© 2024 제주 스마트팜 농가 대시보드 | Data: KMA, 제주특별자치도")
 
-# ----------------- 아래 감귤 재배 적합도 지도 -----------------
-
-
+# ----------------- 감귤 재배 적합도 지도 -----------------
 st.title("🍊 제주 감귤 재배 적합도 종합 지도")
 
-# ✅ 월 선택
 month = st.selectbox("확인할 월을 선택하세요", list(range(1, 13)))
 
-# ✅ 데이터 로딩 (예시: 경로 수정)
+# ✅ 데이터 로딩
 db_path = 'data/asos_weather.db'
 conn = sqlite3.connect(db_path)
 df_weather = pd.read_sql("SELECT * FROM asos_weather", conn)
@@ -64,7 +60,7 @@ df_pest = pd.concat([
 df_citrus = pd.read_excel('data/5.xlsx')
 df_coords = pd.read_excel('data/coords.xlsx')
 
-# ✅ 월별 평균값 추출 (기온, 습도, 강수량, 풍속)
+# ✅ 월별 데이터 가공
 weather_monthly = df_weather[df_weather['월'] == month].groupby('지점명').agg({
     '평균기온(°C)': 'mean',
     '평균 상대습도(%)': 'mean',
@@ -72,10 +68,8 @@ weather_monthly = df_weather[df_weather['월'] == month].groupby('지점명').ag
     '평균 풍속(m/s)': 'mean'
 }).reset_index()
 
-# ✅ 일조량 데이터 병합
 sun_monthly = df_sun[df_sun['월'] == month][['읍면동', '일조시간(hr)']]
 
-# ✅ 병해충 위험도 평균
 df_pest['데이터기준일자'] = pd.to_datetime(df_pest['데이터기준일자'])
 df_pest['월'] = df_pest['데이터기준일자'].dt.month
 pest_monthly = df_pest[df_pest['월'] == month].groupby('중점방제대상').agg({
@@ -115,7 +109,4 @@ for idx, row in df.iterrows():
             tooltip=row['결과']
         ).add_to(m)
 
-st_folium(m, width=1000, height=600)
-
-# ✅ 지도 표시
 st_folium(m, width=1000, height=600)
