@@ -21,11 +21,19 @@ def load_data():
     st.sidebar.success("✅ DB 테이블 목록 확인됨")
     st.sidebar.write(tables)
 
-    # 진짜 테이블명 로딩
-    df_weather = pd.read_sql("SELECT * FROM asos_weather", conn) if 'asos_weather' in tables else pd.DataFrame()
-    df_sunshine = pd.read_sql("SELECT * FROM sunshine_data", conn) if 'sunshine_data' in tables else pd.DataFrame()
-    df_pest_4 = pd.read_sql("SELECT * FROM pest_disease_4", conn) if 'pest_disease_4' in tables else pd.DataFrame()
-    df_pest_5 = pd.read_sql("SELECT * FROM pest_disease_5", conn) if 'pest_disease_5' in tables else pd.DataFrame()
+    # 테이블 로딩
+    def load_table(name):
+        if name in tables:
+            st.sidebar.write(f"✅ {name} 불러옴")
+            return pd.read_sql(f"SELECT * FROM {name}", conn)
+        else:
+            st.warning(f"❗ {name} 테이블 없음")
+            return pd.DataFrame()
+
+    df_weather = load_table('asos_weather')
+    df_sunshine = load_table('sunshine_data')
+    df_pest_4 = load_table('pest_disease_4')
+    df_pest_5 = load_table('pest_disease_5')
 
     conn.close()
 
