@@ -1,49 +1,60 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="감귤 맞춤 조언", layout="wide", page_icon="🍊")
 
-st.header("🥕 작물 맞춤 조언")
+st.title("🍊 감귤 맞춤 월별 조언")
 
-# 월 선택
-month = st.selectbox("월을 선택하세요", list(range(1, 13)))
-
-# 작물 선택
-advice_data = {
-    "감귤": {
-        5: {
-            "info": "꽃이 지고 열매가 맺히는 시기입니다. 물 관리와 병해충 주의가 필요합니다.",
-            "warning": "진딧물, 깍지벌레 등 병해충 집중 방제 필요!"
-        },
-        10: {
-            "info": "수확기를 앞두고 과일비대가 진행됩니다. 영양관리 및 착색 관리 중요.",
-            "warning": "탄저병 발생 가능성 높음 → 방제 필수"
-        }
+# ✅ 감귤 전용 데이터
+citrus_advice = {
+    3: {
+        "info": "꽃눈이 분화되고 초기 수분관리가 중요한 시기입니다.",
+        "warning": "봄 가뭄 대비 물주기 & 진딧물 예찰 필요",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/8/82/Mandarin_oranges_on_tree.jpg",
+        "todo": ["수분 관리 강화", "진딧물 예찰", "토양 배수 점검"],
+        "progress": 20  # 착색률 예시
     },
-    "배추": {
-        5: {
-            "info": "초기 생육 촉진을 위한 잡초 제거 및 배수관리 필요.",
-            "warning": "뿌리혹병, 해충(배추좀나방) 방제 필요"
-        },
-        9: {
-            "info": "가을배추 정식 시기입니다. 초기 활착 관리 중요.",
-            "warning": "고온기 뿌리썩음병 주의"
-        }
+    5: {
+        "info": "꽃이 지고 열매가 맺히는 시기입니다. 물 관리와 병해충 주의가 필요합니다.",
+        "warning": "진딧물, 깍지벌레 방제 집중",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/f/fc/Citrus_sinensis_fruit_01.jpg",
+        "todo": ["과일 비대기 물주기", "병해충 방제", "비료 살포"],
+        "progress": 40
+    },
+    10: {
+        "info": "수확기를 앞두고 과일 비대와 착색이 진행됩니다.",
+        "warning": "탄저병 발생 주의 → 방제 필수",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/d/d3/Citrus_unshiu.jpg",
+        "todo": ["착색 촉진 관리", "탄저병 방제", "조기 수확 준비"],
+        "progress": 90
     }
 }
 
-crop = st.selectbox("작물을 선택하세요", list(advice_data.keys()))
+# ✅ 월 선택
+month = st.selectbox("월을 선택하세요", list(range(1, 13)))
 
-# 데이터 조회
-crop_advice = advice_data.get(crop, {}).get(month, None)
+# ✅ 데이터 조회
+advice = citrus_advice.get(month, None)
 
-if crop_advice:
-    col1, col2 = st.columns(2)
+if advice:
+    col1, col2 = st.columns([2, 1])
+
+    # ✅ 왼쪽: 정보 + 주의사항
     with col1:
-        st.success(f"✅ {crop} {month}월 조언")
-        st.markdown(crop_advice['info'])
+        st.success(f"✅ {month}월 감귤 관리 포인트")
+        st.markdown(f"**📌 작업 조언**\n- {advice['info']}")
+        st.warning(f"⚠️ {advice['warning']}")
+
+        st.subheader("📝 이번 달 할 일 체크리스트")
+        for task in advice['todo']:
+            st.checkbox(task, value=False)
+
+        st.subheader("🎨 착색 진행률")
+        st.progress(advice['progress'] / 100)
+
+    # ✅ 오른쪽: 이미지 표시
     with col2:
-        st.warning(f"⚠️ {crop} {month}월 주의사항")
-        st.markdown(crop_advice['warning'])
+        st.image(advice['image'], caption=f"{month}월 감귤 생육 예시", use_column_width=True)
+
 else:
-    st.info(f"현재 {crop}의 {month}월 조언 데이터가 없습니다.")
+    st.info(f"현재 {month}월 감귤 조언 데이터가 없습니다.")
