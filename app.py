@@ -46,6 +46,9 @@ df_citrus = df_citrus.rename(columns={'행정구역(읍면동)': '읍면동'})
 df_coords = pd.read_excel('data/coords.xlsx')
 st.write("🗺️ df_coords 실제 컬럼명:", df_coords.columns.tolist())
 
+# ✅ df_weather 컬럼명 확인
+st.write("📊 df_weather 컬럼명:", df_weather.columns.tolist())
+
 # ✅ 좌표 데이터 Key 안전판
 possible_keys = ['읍면동', '행정구역(읍면동)', '지점명']
 key_col = next((col for col in possible_keys if col in df_coords.columns), None)
