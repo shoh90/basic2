@@ -4,10 +4,10 @@ import sqlite3
 import folium
 from streamlit_folium import st_folium
 
-# ✅ 페이지 설정 (맨 위 1번만)
+# ✅ 페이지 설정
 st.set_page_config(page_title="제주 농부 스마트 대시보드", layout="wide", page_icon="🍊")
 
-# ✅ 상단 대시보드 소개
+# ✅ 대시보드 상단
 st.title("🍊 제주 농부 스마트 대시보드")
 
 st.markdown("""
@@ -22,8 +22,8 @@ with col1:
     st.markdown("오늘 날씨 / 주간 예보 / 감귤 재배량 지도")
 
 with col2:
-    st.subheader("📊 기후 & 병해충 분석")
-    st.markdown("기온 / 강수량 / 풍속 / 습도 / 일조량 / 병해충 분석")
+    st.subheader("📊 기후 분석")
+    st.markdown("기온 / 강수량 / 풍속 / 습도 / 일조량")
 
 with col3:
     st.subheader("🥕 작물 맞춤 조언")
@@ -32,7 +32,7 @@ with col3:
 st.divider()
 st.caption("© 2024 제주 스마트팜 농가 대시보드 | Data: KMA, 제주특별자치도")
 
-# ✅ 제주 감귤 재배 적합도 지도
+# ✅ 감귤 재배 적합도 지도
 st.subheader("🍊 제주 감귤 재배 적합도 종합 지도")
 
 month = st.selectbox("확인할 월을 선택하세요", list(range(1, 13)))
@@ -48,13 +48,8 @@ df_weather['월'] = df_weather['일시'].dt.month
 
 df_citrus = pd.read_excel('data/5.xlsx')
 df_coords = pd.read_excel('data/coords.xlsx')
-df_pest = pd.concat([
-    pd.read_csv('data/pest_disease_info_1.csv'),
-    pd.read_csv('data/pest_disease_info_2.csv'),
-    pd.read_csv('data/pest_disease_info_3.csv')
-])
 
-# ✅ 컬럼명 매핑 (실제 데이터 기준)
+# ✅ 컬럼명 매핑
 col_map = {
     '평균기온': '평균기온(°C)',
     '평균 상대습도': '평균상대습도(%)',
@@ -80,27 +75,18 @@ weather_monthly = weather_monthly.rename(columns={
     col_map['일조시간']: '일조시간(hr)'
 })
 
-# ✅ 병해충 데이터 처리
-df_pest['데이터기준일자'] = pd.to_datetime(df_pest['데이터기준일자'])
-df_pest['월'] = df_pest['데이터기준일자'].dt.month
-pest_monthly = df_pest[df_pest['월'] == month].groupby('중점방제대상').agg({
-    '위험도지수': 'mean'
-}).reset_index().rename(columns={'중점방제대상': '읍면동'})
-
-# ✅ 데이터 병합
+# ✅ 병합
 df = weather_monthly.merge(df_citrus[['읍면동', '재배량(톤)']], on='읍면동', how='left')
 df = df.merge(df_coords, on='읍면동', how='left')
-df = df.merge(pest_monthly, on='읍면동', how='left')
 
-# ✅ 적합도 계산
+# ✅ 적합도 계산 (병해충 제외)
 df['기온적합'] = df['평균기온(°C)'].apply(lambda x: 1 if 18 <= x <= 25 else 0)
 df['습도적합'] = df['평균상대습도(%)'].apply(lambda x: 1 if 60 <= x <= 75 else 0)
 df['강수적합'] = df['월합강수량(mm)'].apply(lambda x: 1 if x <= 50 else 0)
 df['풍속적합'] = df['평균풍속(m/s)'].apply(lambda x: 1 if x <= 5 else 0)
 df['일조적합'] = df['일조시간(hr)'].apply(lambda x: 1 if x >= 6 else 0)
-df['병해적합'] = df['위험도지수'].apply(lambda x: 1 if pd.notnull(x) and x <= 0.5 else 0)
 
-df['적합도'] = df[['기온적합', '습도적합', '강수적합', '풍속적합', '일조적합', '병해적합']].mean(axis=1)
+df['적합도'] = df[['기온적합', '습도적합', '강수적합', '풍속적합', '일조적합']].mean(axis=1)
 df['결과'] = df['적합도'].apply(lambda x: '적합' if x >= 0.7 else '부적합')
 
 # ✅ 지도 시각화
@@ -120,3 +106,14 @@ for idx, row in df.iterrows():
         ).add_to(m)
 
 st_folium(m, width=1000, height=600)
+
+# ✅ 방제약 정보 표 (병해충 파일 활용)
+st.subheader("🐛 주요 병해충 방제약 정보")
+
+df_pest = pd.concat([
+    pd.read_csv('data/pest_disease_info_1.csv'),
+    pd.read_csv('data/pest_disease_info_2.csv'),
+    pd.read_csv('data/pest_disease_info_3.csv')
+])
+
+st.dataframe(df_pest[['중점방제대상', '병해충', '방제약', '데이터기준일자']])
