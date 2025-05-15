@@ -83,9 +83,9 @@ weather_monthly = weather_monthly.rename(columns={
 # ✅ 병해충 데이터 처리
 df_pest['데이터기준일자'] = pd.to_datetime(df_pest['데이터기준일자'])
 df_pest['월'] = df_pest['데이터기준일자'].dt.month
-pest_monthly = df_pest[df_pest['월'] == month].groupby('병해충명').agg({
+pest_monthly = df_pest[df_pest['월'] == month].groupby('중점방제대상').agg({
     '위험도지수': 'mean'
-}).reset_index().rename(columns={'병해충명': '읍면동'})
+}).reset_index().rename(columns={'중점방제대상': '읍면동'})
 
 # ✅ 데이터 병합
 df = weather_monthly.merge(df_citrus[['읍면동', '재배량(톤)']], on='읍면동', how='left')
