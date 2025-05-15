@@ -1,12 +1,5 @@
 import streamlit as st
-import pandas as pd
-import plotly.express as px
-from modules.db_loader import load_db_table
+from pages_common import render_chart
 
 st.header("🌡 기온 분석")
-
-df_weather = load_db_table('asos_weather')
-df_weather['일시'] = pd.to_datetime(df_weather['일시'])
-
-fig = px.line(df_weather, x='일시', y='평균기온(°C)', title="일별 평균기온 추이")
-st.plotly_chart(fig)
+render_chart(keyword='기온', y_label='평균 기온 (°C)', title='월별 평균 기온 추이')
