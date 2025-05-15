@@ -46,18 +46,17 @@ df_citrus = df_citrus.rename(columns={'행정구역(읍면동)': '읍면동'})
 df_coords = pd.read_excel('data/coords.xlsx')
 st.write("🗺️ df_coords 실제 컬럼명:", df_coords.columns.tolist())
 
+
 # ✅ df_weather 컬럼명 확인
 st.write("📊 df_weather 컬럼명:", df_weather.columns.tolist())
 
-# ✅ 좌표 데이터 Key 안전판
+# ✅ '지점명' 또는 '읍면동' 유사 컬럼명 찾기
 possible_keys = ['읍면동', '행정구역(읍면동)', '지점명']
-key_col = next((col for col in possible_keys if col in df_coords.columns), None)
+weather_key_col = next((col for col in possible_keys if col in df_weather.columns), None)
 
-if not key_col:
-    st.error("❗ df_coords에서 '읍면동'으로 사용할 수 있는 컬럼명이 없습니다. 컬럼명을 확인해주세요.")
+if not weather_key_col:
+    st.error("❗ df_weather에서 '읍면동'으로 사용할 수 있는 컬럼명이 없습니다. 컬럼명을 확인해주세요.")
     st.stop()
-
-df_coords = df_coords.rename(columns={key_col: '읍면동'})
 
 # ✅ 총재배량(톤) 생성
 df_citrus['총재배량(톤)'] = df_citrus[[
