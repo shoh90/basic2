@@ -52,8 +52,6 @@ if not filtered.empty:
 else:
     st.success(f"😊 현재 {region} 지역의 {crop}에는 특별한 병해충 위험이 없습니다.")
 
-# 7. 지역별 병해충 위험도 지도 (선택적)
+# 7. 지역별 병해충 위험도 지도 (추후 구현)
 st.subheader("🗺️ 제주 지역별 병해충 위험도 (예시 Heatmap)")
-# 여기는 coords.xlsx 또는 jeju_geo.json과 연계 필요 (추후 구현 가능)
-st.info("※ 지도는 좌표 데이터가 준비되면 구현 가능합니다.")
-
+st.info("※ 지도는 coords.xlsx 데이터 연계 시 구현됩니다.")
