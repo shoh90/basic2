@@ -4,18 +4,17 @@ import sqlite3
 import folium
 from streamlit_folium import st_folium
 
-# ✅ 1. 페이지 설정
+# ✅ 페이지 설정
 st.set_page_config(page_title="제주 농부 스마트 대시보드", layout="wide", page_icon="🍊")
 
-# ✅ 2. 상단 대시보드 안내
+# ✅ 대시보드 소개
 st.title("🍊 제주 농부 스마트 대시보드")
-
 st.markdown("""
 제주도 농사에 필요한 모든 정보를 한 곳에서 확인하세요.  
 왼쪽 메뉴에서 원하는 항목을 선택하세요.
 """)
 
-# ✅ 메뉴 카드
+# ✅ 카드형 메뉴
 col1, col2, col3 = st.columns(3)
 with col1:
     st.subheader("🏠 전체 요약")
@@ -30,7 +29,6 @@ st.divider()
 month = st.selectbox("확인할 월을 선택하세요", list(range(1, 13)))
 
 # ✅ 데이터 로딩
-# 1. 기상 데이터
 conn = sqlite3.connect('data/asos_weather.db')
 df_weather = pd.read_sql("SELECT * FROM asos_weather", conn)
 conn.close()
@@ -38,41 +36,40 @@ conn.close()
 df_weather['일시'] = pd.to_datetime(df_weather['일시'])
 df_weather['월'] = df_weather['일시'].dt.month
 
-# 2. 재배량 데이터
 df_citrus = pd.read_excel('data/5.xlsx')
-df_citrus = df_citrus.rename(columns={'행정구역(읍면동)': '읍면동'})
-
-# 3. 좌표 데이터
 df_coords = pd.read_excel('data/coords.xlsx')
-st.write("🗺️ df_coords 실제 컬럼명:", df_coords.columns.tolist())
 
+# ✅ 좌표 Key 안전판
+st.write("🗺️ df_coords 컬럼명:", df_coords.columns.tolist())
+coord_key_col = next((col for col in ['읍면동', '행정구역(읍면동)', '지점명'] if col in df_coords.columns), None)
+if not coord_key_col:
+    st.error("❗ df_coords에서 사용할 수 있는 읍면동 Key 컬럼이 없습니다.")
+    st.stop()
+df_coords = df_coords.rename(columns={coord_key_col: '읍면동'})
 
-# ✅ df_weather 컬럼명 확인
+# ✅ df_weather Key 안전판
 st.write("📊 df_weather 컬럼명:", df_weather.columns.tolist())
-
-# ✅ '지점명' 또는 '읍면동' 유사 컬럼명 찾기
-possible_keys = ['읍면동', '행정구역(읍면동)', '지점명']
-weather_key_col = next((col for col in possible_keys if col in df_weather.columns), None)
-
+weather_key_col = next((col for col in ['읍면동', '행정구역(읍면동)', '지점명'] if col in df_weather.columns), None)
 if not weather_key_col:
-    st.error("❗ df_weather에서 '읍면동'으로 사용할 수 있는 컬럼명이 없습니다. 컬럼명을 확인해주세요.")
+    st.error("❗ df_weather에서 사용할 수 있는 읍면동 Key 컬럼이 없습니다.")
     st.stop()
 
-# ✅ 총재배량(톤) 생성
+# ✅ 재배량 합계
+df_citrus = df_citrus.rename(columns={'행정구역(읍면동)': '읍면동'})
 df_citrus['총재배량(톤)'] = df_citrus[[
     '노지온주(극조생)', '노지온주(조생)', '노지온주(보통)',
     '하우스감귤(조기출하)', '비가림(월동)감귤',
     '만감류(시설)', '만감류(노지)'
 ]].sum(axis=1)
 
-# ✅ 월별 기상 데이터 집계
-df_weather_month = df_weather[df_weather['월'] == month].groupby('지점명').agg({
+# ✅ 월별 기상 데이터 집계 (Key 안전판 적용)
+df_weather_month = df_weather[df_weather['월'] == month].groupby(weather_key_col).agg({
     '평균기온(°C)': 'mean',
     '평균상대습도(%)': 'mean',
     '월합강수량(00~24h만)(mm)': 'sum',
     '평균풍속(m/s)': 'mean',
     '합계 일조시간(hr)': 'sum'
-}).reset_index().rename(columns={'지점명': '읍면동'})
+}).reset_index().rename(columns={weather_key_col: '읍면동'})
 
 # ✅ 데이터 병합
 df = df_weather_month.merge(df_citrus[['읍면동', '총재배량(톤)']], on='읍면동', how='left')
