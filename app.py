@@ -4,6 +4,8 @@ import sqlite3
 import folium
 from streamlit_folium import st_folium
 
+st.set_page_config(page_title="제주 감귤 재배 적합도", layout="wide")
+
 st.set_page_config(
     page_title="제주 농부 스마트 대시보드",
     layout="wide",
@@ -36,7 +38,7 @@ st.divider()
 st.caption("© 2024 제주 스마트팜 농가 대시보드 | Data: KMA, 제주특별자치도")
 
 # ----------------- 아래 감귤 재배 적합도 지도 -----------------
-st.set_page_config(page_title="제주 감귤 재배 적합도", layout="wide")
+
 
 st.title("🍊 제주 감귤 재배 적합도 종합 지도")
 
