@@ -25,7 +25,7 @@ if not dfs:
 df_pest = pd.concat(dfs, ignore_index=True)
 
 # ✅ 컬럼명 확인
-st.write("✅ 현재 데이터 컬럼명:", df_pest.columns.tolist())
+#st.write("✅ 현재 데이터 컬럼명:", df_pest.columns.tolist())
 
 # ✅ 월 컬럼 생성
 if '데이터기준일자' in df_pest.columns:
