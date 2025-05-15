@@ -19,7 +19,7 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.subheader("🏠 전체 요약")
     st.markdown("오늘 날씨, 주간 예보, 감귤 재배량 지도를 한 번에 확인")
-    st.page_link("1_main_overview", label="바로가기 ➡️")
+    st.page_link("pages/1_main_overview", label="바로가기 ➡️")
 
 with col2:
     st.subheader("📊 기후 & 병해충 분석")
