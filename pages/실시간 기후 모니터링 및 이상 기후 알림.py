@@ -26,7 +26,7 @@ df_weather['연도'] = df_weather['일시'].dt.year
 today = df_weather['일시'].max()
 today_data = df_weather[df_weather['일시'] == today]
 
-# ✅ 평균기온 (표기명 변경: '일기온')
+# ✅ 일기온 (평균기온 → 일기온 문구만 변경)
 st.subheader("🌡️ 일기온")
 if not today_data.empty:
     fig_temp = px.bar(today_data, x='지점명', y='평균기온(°C)', title=f"{today.date()} 일기온 (°C)")
