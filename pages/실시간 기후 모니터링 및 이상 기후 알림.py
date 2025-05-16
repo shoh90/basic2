@@ -54,7 +54,7 @@ else:
     st.warning("오늘 풍속 데이터가 없습니다.")
 
 # ✅ 주간 강수 예보 (가상 예시)
-st.subheader("📅 주간 강수량 예보 (예시)")
+st.subheader("📅 주간 강수량 예보")
 dummy = pd.DataFrame({
     '날짜': pd.date_range(start=today, periods=7),
     '예상강수량(mm)': [0, 10, 20, 5, 0, 15, 0]
@@ -63,15 +63,24 @@ fig_forecast = px.bar(dummy, x='날짜', y='예상강수량(mm)', title="주간 
 st.plotly_chart(fig_forecast, use_container_width=True)
 
 # ✅ 이상기후 경고 (가상 로직 예시)
-st.subheader("⚠️ 이상기후 경고")
+# 안전하게 컬럼 확인 → 없으면 오류 없이 넘어감
+def get_col_mean(df, col):
+    if col in df.columns:
+        return df[col].mean()
+    else:
+        st.warning(f"❗ 컬럼 '{col}'이 없습니다.")
+        return None
 
+st.subheader("⚠️ 이상기후 경고")
 warnings = []
 
-if today_data['평균기온(°C)'].mean() >= 30:
+if get_col_mean(today_data, '평균기온(°C)') and get_col_mean(today_data, '평균기온(°C)') >= 30:
     warnings.append("🔥 고온주의보 (평균기온 30도 이상)")
-if today_data['일강수량(mm)'].mean() <= 1:
+
+if get_col_mean(today_data, '월합강수량(00~24h만)(mm)') and get_col_mean(today_data, '월합강수량(00~24h만)(mm)') <= 1:
     warnings.append("💧 무강수 경고 (1mm 이하)")
-if today_data['평균풍속(m/s)'].mean() >= 8:
+
+if get_col_mean(today_data, '평균풍속(m/s)') and get_col_mean(today_data, '평균풍속(m/s)') >= 8:
     warnings.append("🌪️ 강풍주의보 (풍속 8m/s 이상)")
 
 if warnings:
