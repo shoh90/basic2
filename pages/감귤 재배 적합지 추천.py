@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import sqlite3
 import folium
 from streamlit_folium import st_folium
 
@@ -12,7 +13,9 @@ st.markdown("제주도 주요 지역의 감귤 재배량과 재배 적합도를 
 # ----------------- 데이터 로딩 -----------------
 @st.cache_data
 def load_data():
-    df_weather = pd.read_sql("SELECT * FROM asos_weather", sqlite3.connect('data/asos_weather.db'))
+    conn = sqlite3.connect('data/asos_weather.db')
+    df_weather = pd.read_sql("SELECT * FROM asos_weather", conn)
+    conn.close()
     df_citrus_1 = pd.read_excel('data/5.xlsx', engine='openpyxl')
     df_citrus_2 = pd.read_excel('data/4.xlsx', engine='openpyxl')
     df_coords = pd.read_excel('data/coords.xlsx', engine='openpyxl')
@@ -21,11 +24,10 @@ def load_data():
 df_weather, df_citrus_1, df_citrus_2, df_coords = load_data()
 
 # ----------------- 데이터 준비 -----------------
-# 좌표 dict
 df_coords = df_coords.rename(columns={'행정구역(읍면동)': '읍면동'})
 coord_dict = df_coords.set_index("읍면동").T.to_dict()
 
-# 연도 선택 (두 데이터 모두 포함된 범위)
+# 연도 선택
 years_1 = df_citrus_1['연도'].dropna().unique()
 years_2 = df_citrus_2['연도'].dropna().unique()
 available_years = sorted(set(years_1) | set(years_2), reverse=True)
@@ -42,7 +44,7 @@ for _, row in filtered_1.iterrows():
     region = row['읍면동']
     crops = {col: row[col] for col in ['노지온주(극조생)', '노지온주(조생)', '노지온주(보통)',
                                         '하우스감귤(조기출하)', '비가림(월동)감귤',
-                                        '만감류(시설)', '만감류(노지)']}
+                                        '만감류(시설)', '만감류(노지)'] if col in row}
     if region in coord_dict:
         lat, lon = coord_dict[region]['위도'], coord_dict[region]['경도']
         detail = "\n".join([f"{crop}: {amount:,.2f}톤" for crop, amount in crops.items()])
