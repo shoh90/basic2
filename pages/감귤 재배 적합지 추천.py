@@ -51,15 +51,17 @@ weather_month = df_weather[df_weather['연도'] == selected_year].groupby('지�
     '합계 일조시간(hr)': 'mean'
 }).reset_index().rename(columns={'지점명': '읍면동'})
 
-# 적합도 계산
-weather_month['기온적합'] = weather_month['평균기온(°C)'].apply(lambda x: 1 if 18 <= x <= 25 else 0)
-weather_month['습도적합'] = weather_month['평균상대습도(%)'].apply(lambda x: 1 if 60 <= x <= 75 else 0)
-weather_month['강수적합'] = weather_month['월합강수량(00~24h만)(mm)'].apply(lambda x: 1 if x <= 50 else 0)
+# 적합도 계산 (완화 기준)
+weather_month['기온적합'] = weather_month['평균기온(°C)'].apply(lambda x: 1 if 15 <= x <= 28 else 0)
+weather_month['습도적합'] = weather_month['평균상대습도(%)'].apply(lambda x: 1 if 55 <= x <= 80 else 0)
+weather_month['강수적합'] = weather_month['월합강수량(00~24h만)(mm)'].apply(lambda x: 1 if x <= 80 else 0)
 weather_month['풍속적합'] = weather_month['평균풍속(m/s)'].apply(lambda x: 1 if x <= 5 else 0)
-weather_month['일조적합'] = weather_month['합계 일조시간(hr)'].apply(lambda x: 1 if x >= 150 else 0)
+weather_month['일조적합'] = weather_month['합계 일조시간(hr)'].apply(lambda x: 1 if x >= 120 else 0)
 
+# 적합도 점수 계산
 weather_month['적합도점수'] = weather_month[['기온적합', '습도적합', '강수적합', '풍속적합', '일조적합']].sum(axis=1)
 weather_month['결과'] = weather_month['적합도점수'].apply(lambda x: '적합' if x >= 4 else ('보통' if x >= 2 else '부적합'))
+
 
 # ----------------- 첫 번째 데이터 마커 -----------------
 filtered_1 = df_citrus_1[df_citrus_1['연도'] == selected_year]
