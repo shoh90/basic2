@@ -96,7 +96,7 @@ def display_pest_analysis():
 
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader("주요 병해충 발생 위험도 (예시)")
+        st.subheader("주요 병해충 발생 위험도")
         pest_data = pd.DataFrame({
             '병해충': ['귤응애', '진딧물', '총채벌레', '더뎅이병', '검은점무늬병'],
             '현재 위험도': ['주의', '경계', '관심', '주의', '관심'],
@@ -105,7 +105,7 @@ def display_pest_analysis():
         st.dataframe(pest_data.set_index('병해충'))
 
     with col2:
-        st.subheader("병해충 발생 예측 (귤응애 예시)")
+        st.subheader("병해충 발생 예측")
         chart_data = pd.DataFrame({
             '월': pd.to_datetime([f'2024-{m:02d}-01' for m in range(4, 11)]),
             '예상 밀도 (마리/잎)': [5, 15, 30, 45, 35, 20, 10]
@@ -127,7 +127,7 @@ def display_pest_analysis():
         )
         st.altair_chart(c, use_container_width=True)
 
-    st.subheader("추천 방제약 (예시)")
+    st.subheader("추천 방제약")
     st.info("""
     - **귤응애:** 아바멕틴 유제, 스피로메시펜 액상수화제
     - **진딧물:** 이미다클로프리드 수화제, 아세타미프리드 수화제
