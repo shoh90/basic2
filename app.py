@@ -269,7 +269,7 @@ def display_citrus_news_policy():
     
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader("최신 뉴스 (예시)")
+        st.subheader("최신 뉴스")
         news_items = {
             "제주 감귤, 올해 작황 '양호'...당도 기대": "https://example.com/news1",
             "스마트팜 기술 도입, 감귤 농가 생산성 향상": "https://example.com/news2",
@@ -280,7 +280,7 @@ def display_citrus_news_policy():
             st.markdown(f"- [{title}]({url})")
 
     with col2:
-        st.subheader("주요 지원 정책 (예시)")
+        st.subheader("주요 지원 정책")
         policy_items = {
             "청년농업인 영농정착 지원사업": "농림축산식품부",
             "밭작물 공동경영체 육성지원": "제주특별자치도",
