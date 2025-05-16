@@ -4,7 +4,7 @@ from datetime import datetime
 import html
 
 # --- 페이지 설정 ---
-st.set_page_config(page_title="🍊 감귤 스마트 뉴스 대시보드", page_icon="🍊", layout="wide")
+st.set_page_config(page_title="🍊 뉴스 대시보드", page_icon="🍊", layout="wide")
 
 # --- API 키 로드 ---
 try:
