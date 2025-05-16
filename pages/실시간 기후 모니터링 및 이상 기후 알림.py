@@ -34,11 +34,14 @@ if not today_data.empty:
 else:
     st.warning("오늘 기온 데이터가 없습니다.")
 
-# ✅ 일강수량
+# ✅ 일강수량 → 월합강수량(00~24h만)(mm)로 변경
 st.subheader("🌧️ 일강수량")
 if not today_data.empty:
-    fig_rain = px.bar(today_data, x='지점명', y='일강수량(mm)', title=f"{today.date()} 일강수량 (mm)")
-    st.plotly_chart(fig_rain, use_container_width=True)
+    if '월합강수량(00~24h만)(mm)' in today_data.columns:
+        fig_rain = px.bar(today_data, x='지점명', y='월합강수량(00~24h만)(mm)', title=f"{today.date()} 일강수량 (mm)")
+        st.plotly_chart(fig_rain, use_container_width=True)
+    else:
+        st.warning("📛 '월합강수량(00~24h만)(mm)' 컬럼이 없습니다.")
 else:
     st.warning("오늘 강수 데이터가 없습니다.")
 
