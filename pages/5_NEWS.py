@@ -83,7 +83,7 @@ def perform_search(search_query):
             pass # 성공 메시지는 결과 표시 부분에서 처리할 수 있음
 
 # --- UI 구성 ---
-st.title("🍊 실시간 감귤 뉴스 대시보드")
+st.title("🍊 실시간 뉴스 대시보드")
 st.markdown("> 네이버 뉴스 API를 활용하여 감귤 및 농업 관련 최신 뉴스를 제공합니다.")
 st.markdown("---")
 
