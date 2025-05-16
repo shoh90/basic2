@@ -67,7 +67,7 @@ def display_citrus_suitability():
         # 실제로는 Folium, Pydeck 등을 사용하는 것이 더 효과적입니다.
         # 여기서는 st.map으로 대체합니다. 더미 데이터이므로 색상 구분은 생략.
         st.map(map_data, latitude='lat', longitude='lon', size='적합도', color='#FFA500', zoom=8)
-        st.caption("지도 위의 점 크기는 임의의 '적합도'를 나타냅니다 (예시).")
+        st.caption("지도 위의 점 크기는 임의의 '적합도'를 나타냅니다.")
 
     with col2:
         st.subheader("추천 지역 Top 3")
