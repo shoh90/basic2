@@ -24,7 +24,7 @@ def get_naver_news(query, display=10):
     return result.get('items', [])
 
 # Streamlit 화면 구성
-st.title("🍊 감귤 관련 실시간 뉴스 (네이버 API)")
+st.title("🍊 감귤 관련 실시간 뉴스")
 
 query = st.text_input("검색어 입력", "제주 감귤")
 
