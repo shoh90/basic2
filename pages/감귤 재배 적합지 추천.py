@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import folium
+import sqlite3
 from streamlit_folium import st_folium
 
 st.set_page_config(page_title="감귤 재배 적합지 추천", layout="wide", page_icon="🍊")
