@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import sqlite3
 import folium
 from streamlit_folium import st_folium
 
@@ -8,65 +7,66 @@ from streamlit_folium import st_folium
 st.set_page_config(page_title="감귤 재배 적합지 추천", layout="wide", page_icon="🍊")
 
 st.title("🍊 감귤 재배 적합지 추천")
-st.markdown("제주도 주요 지역의 **감귤 재배량과 재배 적합도**를 지도에서 확인하세요.")
+st.markdown("제주도 주요 지역의 감귤 재배량과 재배 적합도를 지도에서 확인하세요.")
 
-# ✅ 데이터 로딩
-conn = sqlite3.connect('data/asos_weather.db')
-df_weather = pd.read_sql("SELECT * FROM asos_weather", conn)
-conn.close()
+# ----------------- 데이터 로딩 -----------------
+@st.cache_data
+def load_data():
+    df_weather = pd.read_sql("SELECT * FROM asos_weather", sqlite3.connect('data/asos_weather.db'))
+    df_citrus_1 = pd.read_excel('data/5.xlsx', engine='openpyxl')
+    df_citrus_2 = pd.read_excel('data/4.xlsx', engine='openpyxl')
+    df_coords = pd.read_excel('data/coords.xlsx', engine='openpyxl')
+    return df_weather, df_citrus_1, df_citrus_2, df_coords
 
-df_weather['일시'] = pd.to_datetime(df_weather['일시'])
-df_weather['월'] = df_weather['일시'].dt.month
-df_weather['연도'] = df_weather['일시'].dt.year
+df_weather, df_citrus_1, df_citrus_2, df_coords = load_data()
 
-df_citrus = pd.read_excel('data/5.xlsx').rename(columns={'행정구역(읍면동)': '읍면동'})
-df_coords = pd.read_excel('data/coords.xlsx').rename(columns={'행정구역(읍면동)': '읍면동'})
+# ----------------- 데이터 준비 -----------------
+# 좌표 dict
+df_coords = df_coords.rename(columns={'행정구역(읍면동)': '읍면동'})
+coord_dict = df_coords.set_index("읍면동").T.to_dict()
 
-# ✅ 감귤 총재배량 계산
-prod_cols = ['노지온주(극조생)', '노지온주(조생)', '노지온주(보통)', '하우스감귤(조기출하)',
-             '비가림(월동)감귤', '만감류(시설)', '만감류(노지)']
-df_citrus['총재배량(톤)'] = df_citrus[prod_cols].sum(axis=1, numeric_only=True)
+# 연도 선택 (두 데이터 모두 포함된 범위)
+years_1 = df_citrus_1['연도'].dropna().unique()
+years_2 = df_citrus_2['연도'].dropna().unique()
+available_years = sorted(set(years_1) | set(years_2), reverse=True)
 
-# ✅ 월 선택
-month = st.selectbox("확인할 월을 선택하세요", list(range(1, 13)))
+selected_year = st.selectbox("확인할 연도를 선택하세요", available_years)
 
-# ✅ 월별 평균값 계산
-df_weather_month = df_weather[df_weather['월'] == month].groupby('지점명').agg({
-    '평균기온(°C)': 'mean',
-    '평균상대습도(%)': 'mean',
-    '월합강수량(00~24h만)(mm)': 'sum',
-    '평균풍속(m/s)': 'mean',
-    '합계 일조시간(hr)': 'sum'
-}).reset_index().rename(columns={'지점명': '읍면동'})
+# ----------------- 지도 생성 -----------------
+map_center = [33.5, 126.5]
+m = folium.Map(location=map_center, zoom_start=10)
 
-# ✅ 병합
-df = df_weather_month.merge(df_citrus[['읍면동', '총재배량(톤)']], on='읍면동', how='left')
-df = df.merge(df_coords, on='읍면동', how='left')
-
-# ✅ 적합도 계산
-df['기온적합'] = df['평균기온(°C)'].apply(lambda x: 1 if 18 <= x <= 25 else 0)
-df['습도적합'] = df['평균상대습도(%)'].apply(lambda x: 1 if 60 <= x <= 75 else 0)
-df['강수적합'] = df['월합강수량(00~24h만)(mm)'].apply(lambda x: 1 if x <= 50 else 0)
-df['풍속적합'] = df['평균풍속(m/s)'].apply(lambda x: 1 if x <= 5 else 0)
-df['일조적합'] = df['합계 일조시간(hr)'].apply(lambda x: 1 if x >= 6 else 0)
-
-df['적합도점수'] = df[['기온적합', '습도적합', '강수적합', '풍속적합', '일조적합']].sum(axis=1)
-df['결과'] = df['적합도점수'].apply(lambda x: '적합' if x >= 4 else ('보통' if x >= 2 else '부적합'))
-
-# ✅ 지도 시각화
-st.subheader(f"🗺️ {month}월 기준 감귤 재배 적합지 지도")
-m = folium.Map(location=[33.4, 126.5], zoom_start=10)
-
-for _, row in df.iterrows():
-    if pd.notnull(row['위도']) and pd.notnull(row['경도']):
-        color = 'green' if row['결과'] == '적합' else ('orange' if row['결과'] == '보통' else 'red')
-        folium.CircleMarker(
-            location=[row['위도'], row['경도']],
-            radius=8,
-            color=color,
-            fill=True,
-            fill_opacity=0.7,
-            tooltip=f"{row['읍면동']} - {row['결과']} (재배량 {row['총재배량(톤)']:.1f}톤)"
+# 첫 번째 데이터 마커
+filtered_1 = df_citrus_1[df_citrus_1['연도'] == selected_year]
+for _, row in filtered_1.iterrows():
+    region = row['읍면동']
+    crops = {col: row[col] for col in ['노지온주(극조생)', '노지온주(조생)', '노지온주(보통)',
+                                        '하우스감귤(조기출하)', '비가림(월동)감귤',
+                                        '만감류(시설)', '만감류(노지)']}
+    if region in coord_dict:
+        lat, lon = coord_dict[region]['위도'], coord_dict[region]['경도']
+        detail = "\n".join([f"{crop}: {amount:,.2f}톤" for crop, amount in crops.items()])
+        folium.Marker(
+            location=[lat, lon],
+            popup=f"{region}\n{detail}",
+            tooltip=region,
+            icon=folium.Icon(color='blue')
         ).add_to(m)
 
+# 두 번째 데이터 마커
+filtered_2 = df_citrus_2[df_citrus_2['연도'] == selected_year]
+for _, row in filtered_2.iterrows():
+    region = row['행정구역(읍면동)']
+    amount = row['재배량(톤)']
+    if region in coord_dict:
+        lat, lon = coord_dict[region]['위도'], coord_dict[region]['경도']
+        folium.Marker(
+            location=[lat, lon],
+            popup=f"{region}: 감귤 {amount:,}톤",
+            tooltip=region,
+            icon=folium.Icon(color='green')
+        ).add_to(m)
+
+# ----------------- 지도 출력 -----------------
+st.subheader(f"🌍 {selected_year} 기준 감귤 재배량 지도")
 st_folium(m, width=1000, height=600)
