@@ -56,7 +56,7 @@ def display_citrus_suitability():
 
     col1, col2 = st.columns([2,1]) # 지도에 더 많은 공간 할애
     with col1:
-        st.subheader("감귤 재배 적합도 지도 (예시)")
+        st.subheader("감귤 재배 적합도 지도")
         # 제주도 중심 좌표 근처의 임의의 점들
         map_data = pd.DataFrame(
             np.random.randn(100, 2) / [15, 15] + [33.3617, 126.5292], # 제주도청 근처
@@ -70,7 +70,7 @@ def display_citrus_suitability():
         st.caption("지도 위의 점 크기는 임의의 '적합도'를 나타냅니다 (예시).")
 
     with col2:
-        st.subheader("추천 지역 Top 3 (예시)")
+        st.subheader("추천 지역 Top 3")
         st.markdown("""
         1.  **서귀포시 남원읍:**
             *   일조량: 매우 우수
